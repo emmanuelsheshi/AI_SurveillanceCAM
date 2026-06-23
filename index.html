@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NDA C2 Surveillance & Security Command</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons for beautiful military/C2 dashboard symbols -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        nda: {
+                            green: '#0F4C2A',      // Forest Green
+                            greenDark: '#082E19',  // Deep Forest Green Shadow
+                            greenLight: '#1B6A3D', // Bright Military Green
+                            gold: '#D4AF37',       // Brass Gold Accent
+                            goldDark: '#AA840A',   // Shadow Gold
+                            red: '#9B111E',        // Deep Crimson Red
+                            redLight: '#D2143A',   // Bright Alarm Red
+                            darkBg: '#0D1111',     // Stealth Onyx Black
+                            panelBg: '#121817'     // Tactical Metal Grey-Green
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Retro/Futuristic green scanline overlay for camera screens */
+        .scanlines {
+            position: relative;
+            overflow: hidden;
+        }
+        .scanlines::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+        
+        /* Custom scrollbars for high-tech look */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121817;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D4AF37;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9B111E;
+        }
+
+        /* Glitch animation for critical alarms */
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+        .animate-alarm {
+            animation: glitch 0.3s infinite;
+        }
+
+        /* Glow effects */
+        .glow-gold {
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.35);
+        }
+        .glow-green {
+            box-shadow: 0 0 10px rgba(27, 106, 61, 0.45);
+        }
+        .glow-red {
+            box-shadow: 0 0 12px rgba(155, 17, 30, 0.6);
+        }
+    </style>
+</head>
+<body class="bg-nda-darkBg text-slate-100 font-mono select-none overflow-hidden h-screen flex flex-col">
+
+    <!-- TOP HEADER BAR -->
+    <header class="bg-gradient-to-r from-nda-greenDark via-nda-green to-nda-darkBg border-b-2 border-nda-gold px-4 py-2 flex flex-col md:flex-row justify-between items-center text-xs space-y-2 md:space-y-0 shadow-lg shrink-0">
+        
+        <!-- Left Wing: Integrated NDA Logo & Crest & Name -->
+        <div class="flex items-center space-x-3">
+            <!-- Official Crest Asset Image -->
+            <div class="relative w-11 h-12 flex-shrink-0">
+                <img src="image_c7d066.png" class="w-full h-full object-contain filter drop-shadow" alt="NDA Crest" onerror="this.onerror=null; this.parentElement.innerHTML='<svg viewBox=\'0 0 100 120\' class=\'w-full h-full\'><rect width=\'100\' height=\'120\' fill=\'#0F4C2A\'/></svg>'">
+            </div>
+            <div>
+                <h1 class="text-sm md:text-base font-black tracking-widest text-white flex items-center gap-2">
+                    NIGERIAN DEFENCE ACADEMY <span class="text-nda-gold">| C2 COMMAND</span>
+                </h1>
+                <p class="text-[10px] text-slate-300 tracking-wider flex items-center gap-1">
+                    <span class="inline-block w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+                    SURVEILLANCE & SECURITY INTELLIGENCE CENTRE (KADUNA, NIGERIA)
+                </p>
+            </div>
+        </div>
+
+        <!-- Center Details: Quick stats -->
+        <div class="flex items-center space-x-6 px-4 py-1 bg-nda-panelBg border border-nda-green/40 rounded-md">
+            <div>
+                <span class="text-slate-400">OPERATOR:</span>
+                <span class="text-nda-gold font-bold ml-1">CAPT. A. ADEBAYO</span>
+            </div>
+            <div class="hidden sm:block border-l border-slate-700 h-4"></div>
+            <div>
+                <span class="text-slate-400">DEFCON:</span>
+                <span class="text-nda-redLight font-extrabold ml-1 animate-pulse">LEVEL 3 (STABLE)</span>
+            </div>
+            <div class="hidden sm:block border-l border-slate-700 h-4"></div>
+            <div>
+                <span class="text-slate-400">NETW SEC:</span>
+                <span class="text-emerald-400 font-bold ml-1"><i class="fa-solid fa-shield-halved mr-1"></i>SECURE</span>
+            </div>
+        </div>
+
+        <!-- Right Wing: Live Clock & Action HUD -->
+        <div class="flex items-center space-x-4 text-right">
+            <div>
+                <div id="liveClock" class="text-sm font-bold text-white tracking-widest">2026-06-23 04:53:00</div>
+                <div class="text-[10px] text-slate-400 tracking-widest">LOCAL TIME (WEST AFRICA)</div>
+            </div>
+            <button onclick="triggerSirenSynth()" class="bg-nda-red hover:bg-nda-redLight text-white px-2 py-1 rounded border border-nda-gold text-[10px] font-bold tracking-tight transition duration-150 flex items-center gap-1">
+                <i class="fa-solid fa-volume-high animate-pulse"></i> TEST AUDIBLE
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONSOLE LAYOUT -->
+    <main class="flex-1 flex overflow-hidden min-h-0">
+        
+        <!-- LEFT CONTROL PANEL (SIDEBAR) -->
+        <aside class="w-80 bg-nda-panelBg border-r border-nda-green p-3 flex flex-col space-y-4 overflow-y-auto shrink-0">
+            
+            <!-- ZONE SELECTOR (10 Zones of 10) -->
+            <section class="bg-nda-darkBg p-2.5 rounded-md border border-nda-green">
+                <h3 class="text-xs font-black text-nda-gold mb-2 tracking-wider border-b border-nda-green pb-1 flex justify-between items-center">
+                    <span>ZONE SELECTION</span>
+                    <span class="text-[10px] text-slate-400">10 Cams per Zone</span>
+                </h3>
+                <div class="grid grid-cols-5 gap-1" id="zoneGrid">
+                    <!-- 10 zone buttons will be generated by JS -->
+                </div>
+            </section>
+
+            <!-- SYSTEM STATISTICS -->
+            <section class="bg-nda-darkBg p-2.5 rounded-md border border-nda-green">
+                <h3 class="text-xs font-black text-nda-gold mb-2 tracking-wider border-b border-nda-green pb-1">
+                    SYSTEM INSTANCE STATUS
+                </h3>
+                <div class="grid grid-cols-2 gap-2 text-center text-xs">
+                    <div class="bg-nda-panelBg p-1.5 rounded border border-emerald-800">
+                        <p class="text-[10px] text-slate-400 font-bold">ACTIVE CAMERAS</p>
+                        <p class="text-emerald-400 font-extrabold text-base">98 <span class="text-[10px] text-slate-400">/ 100</span></p>
+                    </div>
+                    <div class="bg-nda-panelBg p-1.5 rounded border border-nda-red">
+                        <p class="text-[10px] text-slate-400 font-bold">SYSTEM OFFLINE</p>
+                        <p class="text-nda-redLight font-extrabold text-base">2 <span class="text-[10px] text-slate-400">/ 100</span></p>
+                    </div>
+                </div>
+                <!-- Network Performance Diagnostics -->
+                <div class="mt-2.5 space-y-1 text-[10px] text-slate-300">
+                    <div class="flex justify-between">
+                        <span>DATA THROUGHPUT:</span>
+                        <span class="font-bold text-nda-gold">142.4 Mbps</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>AI FRAME PROCESSING:</span>
+                        <span class="font-bold text-emerald-400">22.1 ms</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>MEM CAPACITY STATUS:</span>
+                        <div class="w-24 bg-slate-800 rounded h-2 mt-1 relative overflow-hidden">
+                            <div class="bg-nda-gold w-3/4 h-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW LAYOUTS -->
+            <section class="bg-nda-darkBg p-2.5 rounded-md border border-nda-green">
+                <h3 class="text-xs font-black text-nda-gold mb-2 tracking-wider border-b border-nda-green pb-1">
+                    CONSOLE VIEW LAYOUT
+                </h3>
+                <div class="grid grid-cols-3 gap-1">
+                    <button id="btnLayoutGrid" onclick="changeLayout('grid')" class="py-1.5 px-1 rounded text-center text-xs font-bold border flex flex-col items-center justify-center gap-1 transition-all duration-200 bg-nda-green border-nda-gold text-white shadow">
+                        <i class="fa-solid fa-table-cells-large"></i>
+                        <span>Grid View</span>
+                    </button>
+                    <button id="btnLayoutFocus" onclick="changeLayout('focus')" class="py-1.5 px-1 rounded text-center text-xs font-bold border flex flex-col items-center justify-center gap-1 transition-all duration-200 bg-nda-panelBg border-nda-green/50 text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-expand"></i>
+                        <span>Focus UI</span>
+                    </button>
+                    <button id="btnLayoutMap" onclick="changeLayout('map')" class="py-1.5 px-1 rounded text-center text-xs font-bold border flex flex-col items-center justify-center gap-1 transition-all duration-200 bg-nda-panelBg border-nda-green/50 text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        <span>Tactical Map</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- MODE TOGGLES (NORMAL MODE VS AI MODE) -->
+            <section class="bg-nda-darkBg p-2.5 rounded-md border border-nda-green flex-1 flex flex-col min-h-0">
+                <h3 class="text-xs font-black text-nda-gold mb-2 tracking-wider border-b border-nda-green pb-1">
+                    MODE TOGGLES
+                </h3>
+                
+                <div class="space-y-2">
+                    <!-- Mode Buttons -->
+                    <div class="flex space-x-1 p-0.5 bg-nda-panelBg rounded border border-slate-700">
+                        <button id="modeNormal" onclick="setSystemMode('normal')" class="w-1/2 py-2 text-xs font-bold rounded transition-all duration-200 bg-slate-800 text-slate-300">
+                            NORMAL MODE
+                        </button>
+                        <button id="modeAi" onclick="setSystemMode('ai')" class="w-1/2 py-2 text-xs font-bold rounded transition-all duration-200 bg-nda-green border border-nda-gold text-white glow-green">
+                            AI MODE ACTIVE
+                        </button>
+                    </div>
+
+                    <!-- AI Checklist Configurations -->
+                    <div id="aiConfigPanel" class="bg-nda-panelBg/80 p-2 rounded border border-nda-green/50 space-y-2.5 text-xs text-slate-200 mt-2">
+                        <div class="text-[10px] text-nda-gold font-bold tracking-widest uppercase">AI Analytics Overlay Parameters</div>
+                        
+                        <!-- Intrusion Detection -->
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="aiIntrusion" checked class="accent-nda-gold w-3.5 h-3.5" onchange="toggleAiOption('intrusion')">
+                                <span>Intrusion Detection</span>
+                            </label>
+                            <span class="bg-emerald-950 text-emerald-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-emerald-600 uppercase">Active</span>
+                        </div>
+
+                        <!-- Regions of Interest (ROI) -->
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="aiRoi" checked class="accent-nda-gold w-3.5 h-3.5" onchange="toggleAiOption('roi')">
+                                    <span>Regions of Interest (ROI)</span>
+                                </label>
+                                <span class="bg-emerald-950 text-emerald-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-emerald-600 uppercase">Drawn</span>
+                            </div>
+                            <div class="pl-5 text-[9px] text-slate-400 leading-tight space-y-0.5">
+                                <div><i class="fa-solid fa-draw-polygon text-nda-gold mr-1"></i>Gate 1 Restricted Polygon</div>
+                                <div><i class="fa-solid fa-draw-polygon text-nda-gold mr-1"></i>Perimeter Fence Zone 4 Alpha</div>
+                            </div>
+                        </div>
+
+                        <!-- Curfew Violation Warnings -->
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="aiCurfew" checked class="accent-nda-gold w-3.5 h-3.5" onchange="toggleAiOption('curfew')">
+                                    <span>Curfew Rules Check</span>
+                                </label>
+                                <span class="bg-nda-red/30 text-nda-redLight text-[9px] font-bold px-1.5 py-0.5 rounded border border-nda-red uppercase">Violations On</span>
+                            </div>
+                            <div class="pl-5 text-[9px] text-slate-400">
+                                <i class="fa-regular fa-clock mr-1 text-nda-gold"></i>Active Night curfew: <span class="text-white font-bold">22:00 - 05:00</span>
+                            </div>
+                        </div>
+
+                        <!-- Face Recognition Checkbox -->
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="aiFace" checked class="accent-nda-gold w-3.5 h-3.5" onchange="toggleAiOption('face')">
+                                <span>Face Recognition / DB Match</span>
+                            </label>
+                            <span class="bg-slate-800 text-slate-400 text-[9px] font-bold px-1 py-0.5 rounded">AUTO</span>
+                        </div>
+
+                        <!-- Object Tracking Checkbox -->
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="aiObject" checked class="accent-nda-gold w-3.5 h-3.5" onchange="toggleAiOption('object')">
+                                <span>Dynamic Object Tracking</span>
+                            </label>
+                            <span class="bg-emerald-950 text-emerald-400 text-[9px] font-bold px-1 py-0.5 rounded border border-emerald-600">ON</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulation Alert Box for Admin/Visitor interaction -->
+                <div class="mt-auto pt-3 border-t border-nda-green/40">
+                    <h4 class="text-[10px] text-slate-400 font-bold tracking-wider mb-2">OPERATOR INTRUSION SIMULATOR</h4>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button onclick="injectSimulatedIncident('critical')" class="bg-nda-red/20 hover:bg-nda-red border border-nda-red text-slate-100 py-1 px-1 rounded text-[10px] font-bold transition duration-150 flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Simulate Breach
+                        </button>
+                        <button onclick="injectSimulatedIncident('warning')" class="bg-amber-950/40 hover:bg-amber-700 border border-amber-500 text-slate-100 py-1 px-1 rounded text-[10px] font-bold transition duration-150 flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-clock"></i> Curfew Violate
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </aside>
+
+        <!-- CENTER DISPLAY PANEL -->
+        <section class="flex-1 bg-nda-darkBg p-3 flex flex-col overflow-hidden min-h-0">
+            
+            <!-- CURRENT SELECTION TITLE -->
+            <div class="flex justify-between items-center bg-nda-panelBg border-b-2 border-nda-gold px-3 py-1.5 rounded-t-md shrink-0">
+                <div class="flex items-center space-x-2.5">
+                    <span class="text-nda-gold font-bold text-xs"><i class="fa-solid fa-tower-observation text-nda-gold mr-1"></i>ACTIVE GRID CONSOLE:</span>
+                    <h2 id="currentZoneTitle" class="text-sm font-black text-white uppercase tracking-widest">
+                        ZONE 1 (ACADEMY GATE & ENTRY CHECKPOINTS)
+                    </h2>
+                </div>
+                <div class="flex items-center space-x-4 text-xs">
+                    <span class="text-slate-400 text-[10px]">ZONE PREVIEW OVERVIEW (10x10 GRID ACTIVE)</span>
+                    <div class="flex items-center space-x-1.5">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">ALL FEEDS STREAMING</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LAYOUT CONTROLLER WRAPPER -->
+            <div class="flex-1 overflow-hidden relative mt-2 flex flex-col min-h-0">
+                
+                <!-- GRID VIEW (Default 10 Camera Grid) -->
+                <div id="layoutGrid" class="h-full flex flex-col justify-between space-y-2 select-none">
+                    
+                    <!-- Top row of 5 cameras -->
+                    <div class="grid grid-cols-5 gap-2.5 flex-1 min-h-0">
+                        <!-- Camera Card 1 -->
+                        <div class="relative bg-black rounded border border-nda-green overflow-hidden scanlines flex flex-col cursor-pointer hover:border-nda-gold transition group" onclick="focusOnCamera(0)">
+                            <div class="absolute top-1 left-1 bg-black/80 border border-nda-green text-nda-gold text-[9px] font-bold px-1.5 py-0.5 rounded z-10 font-mono tracking-tight" id="camBadge-0">NDA_C1_01</div>
+                            <div class="absolute top-1 right-1 flex items-center space-x-1 z-10" id="camStatusBadge-0">
+                                <span class="bg-emerald-900/95 border border-emerald-500 text-emerald-400 text-[8px] px-1 py-0.5 rounded font-bold">LIVE</span>
+                            </div>
+                            <div class="flex-1 relative overflow-hidden bg-slate-950">
+                                <canvas id="camCanvas-0" class="w-full h-full object-cover"></canvas>
+                            </div>
+                            <div class="bg-nda-panelBg border-t border-nda-green/40 px-1.5 py-1 text-[10px] text-slate-300 flex justify-between tracking-tight shrink-0">
+                                <span class="font-bold truncate" id="camTitle-0">ACADEMY GATE A</span>
+                                <span class="text-slate-500" id="camCoords-0">LAT 10.603</span>
+                            </div>
+                        </div>
+
+                        <!-- Camera Card 2 -->
+                        <div class="relative bg-black rounded border border-nda-green overflow-hidden scanlines flex flex-col cursor-pointer hover:border-nda-gold transition group" onclick="focusOnCamera(1)">
+                            <div class="absolute top-1 left-1 bg-black/80 border border-nda-green text-nda-gold text-[9px] font-bold px-1.5 py-0.5 rounded z-10" id="camBadge-1">NDA_C1_02</div>
+                            <div class="absolute top-1 right-1 flex items-center space-x-1 z-10" id="camStatusBadge-1">
+                                <span class="bg-emerald-900/95 border border-emerald-500 text-emerald-400 text-[8px] px-1 py-0.5 rounded font-bold">LIVE</span>
+                            </div>
+                            <div class="flex-1 relative overflow-hidden bg-slate-950">
+                                <canvas id="camCanvas-1" class="w-full h-full object-cover"></canvas>
+                            </div>
+                            <div class="bg-nda-panelBg border-t border-nda-green/40 px-1.5 py-1 text-[10px] text-slate-300 flex justify-between tracking-tight shrink-0">
+                                <span class="font-bold truncate" id="camTitle-1">PARADE GROUND NORTH</span>
+                                <span class="text-slate-500" id="camCoords-1">LAT 10.604</span>
+                            </div>
+                        </div>
+
+                        <!-- Camera Card 3 -->
+                        <div class="relative bg-black rounded border border-nda-green overflow-hidden scanlines flex flex-col cursor-pointer hover:border-nda-gold transition group" onclick="focusOnCamera(2)">
+                            <div class="absolute top-1 left-1 bg-black/80 border border-nda-green text-nda-gold text-[9px] font-bold px-1.5 py-0.5 rounded z-10" id="camBadge-2">NDA_C1_03</div>
+                            <div class="absolute top-1 right-1 flex items-center space-x-1 z-10" id="camStatusBadge-2">
+                                <span class="bg-emerald-900/95 border border-emerald-500 text-emerald-400 text-[8px] px-1 py-0.5 rounded font-bold">LIVE</span>
+                            </div>
+                            <div class="flex-1 relative overflow-hidden bg-slate-950">
+                                <canvas id="camCanvas-2" class="w-full h-full object-cover"></canvas>
+                            </div>
+                            <div class="bg-nda-panelBg border-t border-nda-green/40 px-1.5 py-1 text-[10px] text-slate-300 flex justify-between tracking-tight shrink-0">
+                                <span class="font-bold truncate" id="camTitle-2">DORMITORIES ALPHA</span>
+                                <span class="text-slate-500" id="camCoords-2">LAT 10.605</span>
+                            </div>
+                        </div>
+
+                        <!-- Camera Card 4 -->
+                        <div class="relative bg-black rounded border border-nda-green overflow-hidden scanlines flex flex-col cursor-pointer hover:border-nda-gold transition group" onclick="focusOnCamera(3)">
+                            <div class="absolute top-1 left-1 bg-black/80 border border-nda-green text-nda-gold text-[9px] font-bold px-1.5 py-0.5 rounded z-10" id="camBadge-3">NDA_C1_04</div>
+                            <div class="absolute top-1 right-1 flex items-center space-x-1 z-10" id="camStatusBadge-3">
+                                <span class="bg-emerald-900/95 border border-emerald-500 text-emerald-400 text-[8px] px-1 py-0.5 rounded font-bold">LIVE</span>
+                            </div>
+                            <div class="flex-1 relative overflow-hidden bg-slate-950">
+                                <canvas id="camCanvas-3" class="w-full h-full object-cover"></canvas>
+                            </div>
+                            <div class="bg-nda-panelBg border-t border-nda-green/40 px-1.5 py-1 text-[10px] text-slate-300 flex justify-between tracking-tight shrink-0">
+                                <span class="font-bold truncate" id="camTitle-3">ARMORY OUTER FENCE</span>
+                                <span class="text-slate-500" id="camCoords-3">LAT 10.606</span>
+                            </div>
+                        </div>
+
+                        <!-- Camera Card 5 -->
+                        <div class="relative bg-black rounded border border-nda-green overflow-hidden scanlines flex flex-col cursor-pointer hover:border-nda-gold transition group" onclick="focusOnCamera(4)">
+                            <div class="absolute top-1 left-1 bg-black/80 border border-nda-green text-nda-gold text-[9px] font-bold px-1.5 py-0.5 rounded z-10" id="camBadge-4">NDA_C1_05</div>
+                            <div class="absolute top-1 right-1 flex items-center space-x-1 z-10" id="camStatusBadge-4">
+                                <span class="bg-emerald-900/95 border border-emerald-500 text-emerald-400 text-[8px] px-1 py-0.5 rounded font-bold">LIVE</span>
+                            </div>
+                            <div class="flex-1 relative overflow-hidden bg-slate-950">
+                                <canvas id="camCanvas-4" class="w-full h-full object-cover"></canvas>
+                            </div>
+                            <div class="bg-nda-panelBg border-t border-nda-green/40 px-1.5 py-1 text-[10px] text-slate-300 flex justify-between tracking-tight shrink-0">
+                                <span class="font-bold truncate" id="camTitle-4">STAFF QUARTERS PATH</span>
+                                <span class="text-slate-500" id="camCoords-4">LAT 10.607</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom row of 5 cameras -->
+                    <div class="grid grid-cols-5 gap-2.5 flex-1 min-h-0">
+                        <!-- Camera Card 6 -->
+                        <div class="relative bg-black rounded border border-nda-green overflow-hidden scanlines flex flex-col cursor-pointer hover:border-nda-gold transition group" onclick="focusOnCamera(5)">
+                            <div class="absolute top-1 left-1 bg-black/80 border border-nda-green text-nda-gold text-[9px] font-bold px-1.5 py-0.5 rounded z-10" id="camBadge-5">NDA_C1_06</div>
+                            <div class="absolute top-1 right-1 flex items-center space-x-1 z-10" id="camStatusBadge-5">
+                                <span class="bg-emerald-900/95 border border-emerald-500 text-emerald-400 text-[8px] px-1 py-0.5 rounded font-bold">LIVE</span>
+                            </div>
+                            <div class="flex-1 relative overflow-hidden bg-slate-950">
+                                <canvas id="camCanvas-5" class="w-full h-full object-cover"></canvas>
+                            </div>
+                            <div class="bg-nda-panelBg border-t border-nda-green/40 px-1.5 py-1 text-[10px] text-slate-300 flex justify-between tracking-tight shrink-0">
+                                <span class="font-bold truncate" id="camTitle-5">PERIMETER ROAD NORTH</span>
+                                <span class="text-slate-500" id="camCoords-5">LAT 10.608</span>
+                            </div>
+                        </div>
+
+                        <!-- Camera Card 7 -->
+                        <div class="relative bg-black rounded border border-nda-green overflow-hidden scanlines flex flex-col cursor-pointer hover:border-nda-gold transition group" onclick="focusOnCamera(6)">
+                            <div class="absolute top-1 left-1 bg-black/80 border border-nda-green text-nda-gold text-[9px] font-bold px-1.5 py-0.5 rounded z-10" id="camBadge-6">NDA_C1_07</div>
+                            <div class="absolute top-1 right-1 flex items-center space-x-1 z-10" id="camStatusBadge-6">
+                                <span class="bg-emerald-900/95 border border-emerald-500 text-emerald-400 text-[8px] px-1 py-0.5 rounded font-bold">LIVE</span>
+                            </div>
+                            <div class="flex-1 relative overflow-hidden bg-slate-950">
+                                <canvas id="camCanvas-6" class="w-full h-full object-cover"></canvas>
+                            </div>
+                            <div class="bg-nda-panelBg border-t border-nda-green/40 px-1.5 py-1 text-[10px] text-slate-300 flex justify-between tracking-tight shrink-0">
+                                <span class="font-bold truncate" id="camTitle-6">TACTICAL DRILL AREA</span>
+                                <span class="text-slate-500" id="camCoords-6">LAT 10.609</span>
+                            </div>
+                        </div>
+
+                        <!-- Camera Card 8 -->
+                        <div class="relative bg-black rounded border border-nda-green overflow-hidden scanlines flex flex-col cursor-pointer hover:border-nda-gold transition group" onclick="focusOnCamera(7)">
+                            <div class="absolute top-1 left-1 bg-black/80 border border-nda-green text-nda-gold text-[9px] font-bold px-1.5 py-0.5 rounded z-10" id="camBadge-7">NDA_C1_08</div>
+                            <div class="absolute top-1 right-1 flex items-center space-x-1 z-10" id="camStatusBadge-7">
+                                <span class="bg-emerald-900/95 border border-emerald-500 text-emerald-400 text-[8px] px-1 py-0.5 rounded font-bold">LIVE</span>
+                            </div>
+                            <div class="flex-1 relative overflow-hidden bg-slate-950">
+                                <canvas id="camCanvas-7" class="w-full h-full object-cover"></canvas>
+                            </div>
+                            <div class="bg-nda-panelBg border-t border-nda-green/40 px-1.5 py-1 text-[10px] text-slate-300 flex justify-between tracking-tight shrink-0">
+                                <span class="font-bold truncate" id="camTitle-7">OFFICERS' ANTECHAMBER</span>
+                                <span class="text-slate-500" id="camCoords-7">LAT 10.610</span>
+                            </div>
+                        </div>
+
+                        <!-- Camera Card 9 -->
+                        <div class="relative bg-black rounded border border-nda-green overflow-hidden scanlines flex flex-col cursor-pointer hover:border-nda-gold transition group" onclick="focusOnCamera(8)">
+                            <div class="absolute top-1 left-1 bg-black/80 border border-nda-green text-nda-gold text-[9px] font-bold px-1.5 py-0.5 rounded z-10" id="camBadge-8">NDA_C1_09</div>
+                            <div class="absolute top-1 right-1 flex items-center space-x-1 z-10" id="camStatusBadge-8">
+                                <span class="bg-emerald-900/95 border border-emerald-500 text-emerald-400 text-[8px] px-1 py-0.5 rounded font-bold">LIVE</span>
+                            </div>
+                            <div class="flex-1 relative overflow-hidden bg-slate-950">
+                                <canvas id="camCanvas-8" class="w-full h-full object-cover"></canvas>
+                            </div>
+                            <div class="bg-nda-panelBg border-t border-nda-green/40 px-1.5 py-1 text-[10px] text-slate-300 flex justify-between tracking-tight shrink-0">
+                                <span class="font-bold truncate" id="camTitle-8">ACADEMY SPORTS POOL</span>
+                                <span class="text-slate-500" id="camCoords-8">LAT 10.611</span>
+                            </div>
+                        </div>
+
+                        <!-- Camera Card 10 -->
+                        <div class="relative bg-black rounded border border-nda-green overflow-hidden scanlines flex flex-col cursor-pointer hover:border-nda-gold transition group" onclick="focusOnCamera(9)">
+                            <div class="absolute top-1 left-1 bg-black/80 border border-nda-green text-nda-gold text-[9px] font-bold px-1.5 py-0.5 rounded z-10" id="camBadge-9">NDA_C1_10</div>
+                            <div class="absolute top-1 right-1 flex items-center space-x-1 z-10" id="camStatusBadge-9">
+                                <span class="bg-emerald-900/95 border border-emerald-500 text-emerald-400 text-[8px] px-1 py-0.5 rounded font-bold">LIVE</span>
+                            </div>
+                            <div class="flex-1 relative overflow-hidden bg-slate-950">
+                                <canvas id="camCanvas-9" class="w-full h-full object-cover"></canvas>
+                            </div>
+                            <div class="bg-nda-panelBg border-t border-nda-green/40 px-1.5 py-1 text-[10px] text-slate-300 flex justify-between tracking-tight shrink-0">
+                                <span class="font-bold truncate" id="camTitle-9">COMMAND HQ BUILDING</span>
+                                <span class="text-slate-500" id="camCoords-9">LAT 10.612</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- FOCUS VIEW (One Large Selected Camera with Details) -->
+                <div id="layoutFocus" class="hidden h-full flex flex-row space-x-3 select-none">
+                    <!-- Left: Selected Large Feed -->
+                    <div class="flex-1 bg-black rounded border-2 border-nda-gold overflow-hidden scanlines flex flex-col relative">
+                        <div class="absolute top-2 left-2 bg-black/90 border border-nda-gold text-nda-gold text-xs font-bold px-2 py-1 rounded z-10 font-mono tracking-widest" id="focusLabelBadge">NDA_C1_01</div>
+                        <div class="absolute top-2 right-2 flex items-center space-x-1.5 z-10">
+                            <span class="bg-emerald-900/95 border border-emerald-500 text-emerald-400 text-xs px-2.5 py-0.5 rounded font-bold animate-pulse">LOCKED LIVE FEED</span>
+                        </div>
+                        <div class="flex-1 relative bg-slate-950">
+                            <canvas id="focusMainCanvas" class="w-full h-full object-cover"></canvas>
+                        </div>
+                        <div class="bg-nda-panelBg border-t-2 border-nda-gold/60 p-2 text-xs text-slate-100 flex justify-between tracking-wider shrink-0">
+                            <span class="font-black text-white" id="focusCamTitle">CAMERA ZOOM: GATE A CHECKPOINT</span>
+                            <span class="text-nda-gold font-bold" id="focusCamCoords">COORD: 10.60334° N, 7.42398° E</span>
+                        </div>
+                    </div>
+                    <!-- Right: Feed Parameters/Controls -->
+                    <div class="w-72 bg-nda-panelBg border border-nda-green rounded-md p-3 flex flex-col space-y-3.5">
+                        <div class="text-xs font-black text-nda-gold border-b border-nda-green pb-1 flex justify-between items-center">
+                            <span>FOCUS FEED DIAGNOSTICS</span>
+                            <button onclick="changeLayout('grid')" class="text-[10px] bg-nda-green hover:bg-nda-greenLight border border-nda-gold text-white px-2 py-0.5 rounded transition">
+                                <i class="fa-solid fa-angles-left mr-1"></i>Back
+                            </button>
+                        </div>
+                        
+                        <!-- AI Analysis Log -->
+                        <div class="space-y-2 text-xs">
+                            <div class="bg-nda-darkBg p-2 rounded border border-nda-green text-[11px]">
+                                <span class="text-slate-400 block font-bold">ANALYSIS RESOLUTION:</span>
+                                <span class="text-white font-mono">1920x1080 @ 60fps</span>
+                            </div>
+                            <div class="bg-nda-darkBg p-2 rounded border border-nda-green text-[11px]">
+                                <span class="text-slate-400 block font-bold">PTZ CAMERA HARDWARE:</span>
+                                <span class="text-white">Sony Alpha Command PTZ Pro v3</span>
+                            </div>
+                            <div class="bg-nda-darkBg p-2 rounded border border-nda-green text-[11px]">
+                                <span class="text-slate-400 block font-bold">INTELLIGENCE METADATA:</span>
+                                <div class="mt-1 space-y-1">
+                                    <div class="flex justify-between">
+                                        <span>Target Conf:</span>
+                                        <span class="font-bold text-emerald-400">98.4% Average</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>ROI Perimeter:</span>
+                                        <span class="font-bold text-nda-gold">ACTIVE (Safe Zone)</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Curfew Check:</span>
+                                        <span class="font-bold text-emerald-400">Passed</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Manual PTZ Control Shield -->
+                        <div class="bg-nda-darkBg p-2.5 rounded border border-nda-green flex-1 flex flex-col justify-between">
+                            <div class="text-[10px] text-nda-gold font-bold tracking-widest text-center border-b border-nda-green/40 pb-1">PTZ CONTROL CODES</div>
+                            
+                            <div class="grid grid-cols-3 gap-1 my-3 text-center">
+                                <div></div>
+                                <button onclick="triggerPtzAction('UP')" class="bg-nda-panelBg border border-nda-gold/40 text-nda-gold hover:text-white hover:border-nda-gold py-1 rounded text-xs"><i class="fa-solid fa-chevron-up"></i></button>
+                                <div></div>
+                                <button onclick="triggerPtzAction('LEFT')" class="bg-nda-panelBg border border-nda-gold/40 text-nda-gold hover:text-white hover:border-nda-gold py-1 rounded text-xs"><i class="fa-solid fa-chevron-left"></i></button>
+                                <div class="flex items-center justify-center text-[10px] text-slate-400">IRIS</div>
+                                <button onclick="triggerPtzAction('RIGHT')" class="bg-nda-panelBg border border-nda-gold/40 text-nda-gold hover:text-white hover:border-nda-gold py-1 rounded text-xs"><i class="fa-solid fa-chevron-right"></i></button>
+                                <div></div>
+                                <button onclick="triggerPtzAction('DOWN')" class="bg-nda-panelBg border border-nda-gold/40 text-nda-gold hover:text-white hover:border-nda-gold py-1 rounded text-xs"><i class="fa-solid fa-chevron-down"></i></button>
+                                <div></div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-1.5 text-[10px] font-bold">
+                                <button onclick="triggerPtzAction('ZOOM IN')" class="bg-nda-green border border-nda-gold text-white py-1 rounded hover:bg-nda-greenLight">ZOOM IN</button>
+                                <button onclick="triggerPtzAction('ZOOM OUT')" class="bg-nda-green border border-nda-gold text-white py-1 rounded hover:bg-nda-greenLight">ZOOM OUT</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TACTICAL MAP VIEW WITH ZONE COVERAGE AREAS -->
+                <div id="layoutMap" class="hidden h-full flex flex-col bg-slate-950 border border-nda-gold rounded overflow-hidden relative">
+                    
+                    <!-- Floating Map HUD Overlay Control Panel -->
+                    <div class="absolute top-2 left-2 bg-black/95 border border-nda-gold p-3 rounded-lg z-10 max-w-sm text-xs space-y-2.5 shadow-2xl glow-gold">
+                        <h4 class="font-black text-nda-gold text-xs border-b border-nda-green pb-1 flex justify-between items-center">
+                            <span><i class="fa-solid fa-satellite mr-1"></i>NDA TACTICAL COVERAGE MAP</span>
+                            <span class="text-[9px] bg-nda-green text-emerald-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-tight">C2 Sector</span>
+                        </h4>
+                        <p class="text-[10px] text-slate-300 leading-relaxed">
+                            Vector diagram highlighting the **10 surveillance sectors** at NDA Kaduna. Cones denote estimated optical limits.
+                        </p>
+                        
+                        <!-- Map View Layer Controls -->
+                        <div class="bg-nda-panelBg p-2 rounded border border-nda-green/40 space-y-1.5">
+                            <span class="text-[9px] text-nda-gold font-bold uppercase tracking-wider block">Map Elements Visibility</span>
+                            <div class="flex items-center justify-between text-[10px]">
+                                <span class="text-slate-300"><i class="fa-solid fa-circle-nodes text-nda-gold mr-1"></i>Camera FOV Cones</span>
+                                <input type="checkbox" id="toggleMapCones" checked class="accent-nda-gold" onchange="drawCampusMap()">
+                            </div>
+                            <div class="flex items-center justify-between text-[10px]">
+                                <span class="text-slate-300"><i class="fa-solid fa-draw-polygon text-nda-gold mr-1"></i>Zone Boundary Areas</span>
+                                <input type="checkbox" id="toggleMapZones" checked class="accent-nda-gold" onchange="drawCampusMap()">
+                            </div>
+                            <div class="flex items-center justify-between text-[10px]">
+                                <span class="text-slate-300"><i class="fa-solid fa-arrows-spin text-nda-gold mr-1"></i>Motion Target Trails</span>
+                                <input type="checkbox" id="toggleMapTracks" checked class="accent-nda-gold" onchange="drawCampusMap()">
+                            </div>
+                        </div>
+
+                        <!-- Map Legend Grid -->
+                        <div class="grid grid-cols-2 gap-2 text-[9px] pt-1">
+                            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-emerald-500/20 border border-emerald-500"></span> <span>Normal Cones</span></div>
+                            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-nda-red/30 border border-nda-red animate-pulse"></span> <span class="text-nda-redLight font-bold">Breach Danger Cones</span></div>
+                        </div>
+
+                        <div class="text-[9px] text-slate-400 italic">
+                            * Tip: Click a camera node or cone on the map to switch to Focus view!
+                        </div>
+                    </div>
+
+                    <!-- Canvas Container for Map -->
+                    <div class="flex-1 relative w-full h-full">
+                        <canvas id="campusMapCanvas" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- LOWER DOCK: MINI SCROLLABLE LIVE CAROUSEL OF OTHER ZONES -->
+            <div class="bg-nda-panelBg/80 border border-nda-green p-2 mt-2.5 rounded-md shrink-0 flex flex-col">
+                <div class="text-[9px] text-slate-400 font-bold tracking-widest uppercase mb-1 flex justify-between">
+                    <span>Active Stream Tape Carousel: Zone 2 Quick-Glance feeds</span>
+                    <span class="text-nda-gold">Click Camera to Focus</span>
+                </div>
+                <div class="flex space-x-2 overflow-x-auto py-1" id="tapeCarousel">
+                    <!-- Mini previews generated via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT PANEL: INCIDENT FEED & ALERTS -->
+        <aside class="w-80 bg-nda-panelBg border-l border-nda-green p-3 flex flex-col space-y-4 shrink-0 overflow-y-auto">
+            
+            <section class="bg-nda-darkBg p-2.5 rounded-md border border-nda-green flex flex-col flex-1 min-h-0">
+                <h3 class="text-xs font-black text-nda-gold mb-2 tracking-wider border-b border-nda-green pb-1 flex justify-between items-center">
+                    <span>SMART ALERTS & INCIDENTS</span>
+                    <span class="text-[10px] text-slate-400 bg-nda-panelBg px-1.5 py-0.5 rounded border border-nda-green" id="incidentCount">4 Alerts</span>
+                </h3>
+
+                <!-- Alert Priority Filter Tabs -->
+                <div class="grid grid-cols-3 gap-1 mb-2.5 text-center text-[10px] font-bold">
+                    <button id="filterCritical" onclick="filterLogs('critical')" class="bg-nda-red/20 border border-nda-red text-nda-redLight py-0.5 rounded transition hover:bg-nda-red hover:text-white">CRITICAL</button>
+                    <button id="filterWarning" onclick="filterLogs('warning')" class="bg-amber-950/30 border border-amber-600 text-amber-500 py-0.5 rounded transition hover:bg-amber-600 hover:text-white">WARNING</button>
+                    <button id="filterAll" onclick="filterLogs('all')" class="bg-nda-green border border-nda-gold text-white py-0.5 rounded transition">ALL LOGS</button>
+                </div>
+
+                <!-- Feed Log Stream Scrollable Area -->
+                <div id="logsContainer" class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-0 text-xs">
+                    <!-- JavaScript will dynamically add high-quality live threat alerts here -->
+                </div>
+            </section>
+
+            <!-- SECURITY AUDIT LOGGER (QUICK SUMMARY) -->
+            <section class="bg-nda-darkBg p-2.5 rounded-md border border-nda-green">
+                <h3 class="text-xs font-black text-nda-gold mb-2 tracking-wider border-b border-nda-green pb-1">
+                    AUDIO COMMAND CONSOLE
+                </h3>
+                <div class="space-y-2 text-xs">
+                    <p class="text-[10px] text-slate-400 leading-tight">This dashboard features a synthesized tactical sound output to mimic actual operational audio commands.</p>
+                    <div class="flex items-center justify-between bg-nda-panelBg p-2 rounded border border-nda-green/40">
+                        <span class="text-[10px] text-slate-300">VOICE COMMAND ANNUNCIATOR:</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="voiceAnnounceToggle" class="sr-only peer" checked>
+                            <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-nda-gold after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-nda-green border border-nda-gold/30"></div>
+                        </label>
+                    </div>
+                    <button onclick="synthesizeAnnunciation('Welcome back, Captain Adebayo. All sectors are green.')" class="w-full bg-nda-green/40 hover:bg-nda-green border border-nda-gold text-white py-1.5 rounded text-[10px] font-bold transition">
+                        <i class="fa-solid fa-volume-high mr-1 text-nda-gold"></i> RUN SYSTEM WELCOME SPEECH
+                    </button>
+                </div>
+            </section>
+        </aside>
+
+    </main>
+
+    <!-- FOOTER CLASSIFIED LABEL -->
+    <footer class="bg-nda-darkBg border-t border-nda-gold/50 px-4 py-1.5 text-center text-[10px] tracking-widest text-nda-gold shrink-0 flex flex-col sm:flex-row justify-between items-center bg-gradient-to-r from-nda-greenDark via-nda-darkBg to-nda-greenDark">
+        <span>CLASSIFIED // RESTRICTED ACCESS FOR NDA COMMAND PERSONNEL ONLY // RULE OF ENGAGEMENT v4.1</span>
+        <span class="text-slate-400 hidden sm:inline">WEST AFRICAN SECURE ENVELOPE [STABLE-LINK]</span>
+    </footer>
+
+    <!-- INTERACTIVE JAVASCRIPT LOGIC -->
+    <script>
+        // 1. Initial State Definitions
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'nda-c2-surveillance';
+        let currentZone = 1;
+        let selectedLayout = 'grid'; // 'grid', 'focus', 'map'
+        let systemMode = 'ai'; // 'normal' or 'ai'
+        let selectedCameraIndex = 0; // index inside the active zone (0 to 9)
+        let filterActive = 'all';
+
+        // Custom AI state triggers from Left controls
+        let aiConfig = {
+            intrusion: true,
+            roi: true,
+            curfew: true,
+            face: true,
+            object: true
+        };
+
+        // Web Audio Synthesizer Context
+        let audioCtx = null;
+
+        // Zone Info & Specific Camera Labels
+        const zoneLabels = {
+            1: "ZONE 1 (ACADEMY GATE & CHECKPOINTS)",
+            2: "ZONE 2 (PARADE GROUND & INSTRUCTION FIELD)",
+            3: "ZONE 3 (CADETS DORMITORIES ALPHA & BRAVO)",
+            4: "ZONE 4 (SENSITIVE ARMORY & AMMO CHESTS)",
+            5: "ZONE 5 (OFFICERS & STAFF QUARTERS ROAD)",
+            6: "ZONE 6 (PERIMETER NORTH SECURE WALLS)",
+            7: "ZONE 7 (TACTICAL COMBAT DRILL RANGE)",
+            8: "ZONE 8 (OFFICERS MESS & LOUNGE ENTRY)",
+            9: "ZONE 9 (SPORTS COMPLEX & OLYMPIC POOL)",
+            10: "ZONE 10 (SENIOR MILITARY COMMAND HQ)"
+        };
+
+        // Map Campus Zones Boundaries Setup (for beautiful poly graphics & area coordinates)
+        const campusZonesMap = [
+            { id: 1, name: "Academy Main Gates", points: [[-350, -180], [-230, -180], [-230, -80], [-350, -80]], color: "rgba(16, 185, 129, 0.04)", stroke: "rgba(16, 185, 129, 0.4)" },
+            { id: 2, name: "Parade Grounds", points: [[-180, -200], [-30, -200], [-30, -80], [-180, -80]], color: "rgba(212, 175, 55, 0.03)", stroke: "rgba(212, 175, 55, 0.35)" },
+            { id: 3, name: "Cadet Dormitories", points: [[-50, 80], [100, 80], [100, 200], [-50, 200]], color: "rgba(16, 185, 129, 0.04)", stroke: "rgba(16, 185, 129, 0.3)" },
+            { id: 4, name: "Restricted Armory", points: [[190, -160], [330, -160], [330, -50], [190, -50]], color: "rgba(155, 17, 30, 0.05)", stroke: "rgba(155, 17, 30, 0.6)" },
+            { id: 5, name: "Staff Quarters Path", points: [[-350, 30], [-200, 30], [-200, 150], [-350, 150]], color: "rgba(16, 185, 129, 0.03)", stroke: "rgba(16, 185, 129, 0.3)" },
+            { id: 6, name: "Perimeter Walls North", points: [[-180, -250], [180, -250], [180, -210], [-180, -210]], color: "rgba(155, 17, 30, 0.03)", stroke: "rgba(155, 17, 30, 0.45)" },
+            { id: 7, name: "Tactical Drill Fields", points: [[200, 40], [340, 40], [340, 150], [200, 150]], color: "rgba(212, 175, 55, 0.03)", stroke: "rgba(212, 175, 55, 0.35)" },
+            { id: 8, name: "Officers Mess Lobby", points: [[50, -200], [150, -200], [150, -110], [50, -110]], color: "rgba(16, 185, 129, 0.03)", stroke: "rgba(16, 185, 129, 0.3)" },
+            { id: 9, name: "Sports Pools Arena", points: [[-180, 50], [-60, 50], [-60, 160], [-180, 160]], color: "rgba(16, 185, 129, 0.03)", stroke: "rgba(16, 185, 129, 0.3)" },
+            { id: 10, name: "Command HQ Fortress", points: [[110, 160], [300, 160], [300, 260], [110, 260]], color: "rgba(212, 175, 55, 0.05)", stroke: "rgba(212, 175, 55, 0.55)" }
+        ];
+
+        // Descriptive camera feeds names mapped dynamically for simulated drawing
+        const camerasDb = {
+            1: [
+                { id: "NDA_C1_01", title: "GATE A VEHICLE ENTRANCE", lat: "10.6033 N", lng: "7.4231 E", status: "LIVE", angle: 45, sweepSpeed: 0.015, maxSweep: 40, mapPos: [-320, -150] },
+                { id: "NDA_C1_02", title: "PARADE ENTRANCE ARC", lat: "10.6041 N", lng: "7.4241 E", status: "LIVE", angle: 135, sweepSpeed: 0.01, maxSweep: 30, mapPos: [-280, -120] },
+                { id: "NDA_C1_03", title: "CADETS HOSTEL BLOCK A", lat: "10.6052 N", lng: "7.4253 E", status: "LIVE", angle: 270, sweepSpeed: 0.008, maxSweep: 50, mapPos: [-310, -100] },
+                { id: "NDA_C1_04", title: "ARMORY RESTRICTED ENTRY", lat: "10.6065 N", lng: "7.4211 E", status: "LIVE", angle: 90, sweepSpeed: 0.02, maxSweep: 45, mapPos: [-250, -160] },
+                { id: "NDA_C1_05", title: "STAFF QTRS CENTRAL PATH", lat: "10.6071 N", lng: "7.4225 E", status: "LIVE", angle: 0, sweepSpeed: 0.012, maxSweep: 35, mapPos: [-340, -110] },
+                { id: "NDA_C1_06", title: "PERIMETER FENCE NORTH ALPHA", lat: "10.6080 N", lng: "7.4299 E", status: "LIVE", angle: 180, sweepSpeed: 0.005, maxSweep: 60, mapPos: [-240, -90] },
+                { id: "NDA_C1_07", title: "TACTICAL RANGE OBSTACLES", lat: "10.6092 N", lng: "7.4204 E", status: "LIVE", angle: 225, sweepSpeed: 0.014, maxSweep: 40, mapPos: [-290, -140] },
+                { id: "NDA_C1_08", title: "OFFICERS LOUNGE PARKING", lat: "10.6105 N", lng: "7.4261 E", status: "LIVE", angle: 315, sweepSpeed: 0.016, maxSweep: 30, mapPos: [-270, -160] },
+                { id: "NDA_C1_09", title: "SWIMMING POOL BLEACHERS", lat: "10.6111 N", lng: "7.4250 E", status: "LIVE", angle: 60, sweepSpeed: 0.01, maxSweep: 45, mapPos: [-330, -130] },
+                { id: "NDA_C1_10", title: "COMMAND HQ FRONT FACADE", lat: "10.6122 N", lng: "7.4239 E", status: "LIVE", angle: 120, sweepSpeed: 0.007, maxSweep: 35, mapPos: [-260, -110] },
+            ],
+            2: [
+                { id: "NDA_C2_11", title: "PARADE GROUND FLANK EAST", lat: "10.6044 N", lng: "7.4245 E", status: "LIVE", angle: 30, sweepSpeed: 0.015, maxSweep: 35, mapPos: [-160, -170] },
+                { id: "NDA_C2_12", title: "SALUTE DAIS OVERLOOK", lat: "10.6045 N", lng: "7.4247 E", status: "LIVE", angle: 180, sweepSpeed: 0.01, maxSweep: 45, mapPos: [-120, -150] },
+                { id: "NDA_C2_13", title: "DRILL SQUARE CORNER WEST", lat: "10.6042 N", lng: "7.4240 E", status: "LIVE", angle: 90, sweepSpeed: 0.008, maxSweep: 50, mapPos: [-140, -110] },
+                { id: "NDA_C2_14", title: "SPECTATOR PAVILION REAR", lat: "10.6048 N", lng: "7.4249 E", status: "LIVE", angle: 0, sweepSpeed: 0.02, maxSweep: 30, mapPos: [-80, -140] },
+                { id: "NDA_C2_15", title: "BAND SHELL STAGING AREA", lat: "10.6049 N", lng: "7.4251 E", status: "LIVE", angle: 240, sweepSpeed: 0.011, maxSweep: 40, mapPos: [-60, -180] },
+                { id: "NDA_C2_16", title: "TACTICAL BRIEFING SHELTER", lat: "10.6039 N", lng: "7.4238 E", status: "LIVE", angle: 120, sweepSpeed: 0.013, maxSweep: 35, mapPos: [-150, -140] },
+                { id: "NDA_C2_17", title: "SPORTS FIELD RUNWAY A", lat: "10.6115 N", lng: "7.4255 E", status: "LIVE", angle: 210, sweepSpeed: 0.009, maxSweep: 45, mapPos: [-100, -120] },
+                { id: "NDA_C2_18", title: "CAMPUS INNER ROUNDABOUT", lat: "10.6075 N", lng: "7.4230 E", status: "LIVE", angle: 45, sweepSpeed: 0.007, maxSweep: 60, mapPos: [-110, -90] },
+                { id: "NDA_C2_19", title: "MAIN FLAGSTAFF CAMERA", lat: "10.6125 N", lng: "7.4240 E", status: "LIVE", angle: 315, sweepSpeed: 0.015, maxSweep: 40, mapPos: [-50, -100] },
+                { id: "NDA_C2_20", title: "CADETS INSTRUCTION CHAMBER", lat: "10.6055 N", lng: "7.4258 E", status: "LIVE", angle: 135, sweepSpeed: 0.012, maxSweep: 35, mapPos: [-70, -160] },
+            ],
+        };
+
+        // Populate programmatically coordinates mapping for all remaining zones 3-10 on map
+        for (let z = 3; z <= 10; z++) {
+            if (!camerasDb[z]) camerasDb[z] = [];
+            const zoneBound = campusZonesMap.find(item => item.id === z);
+            // Center bounds calculation
+            const minX = zoneBound.points[0][0];
+            const maxX = zoneBound.points[1][0];
+            const minY = zoneBound.points[0][1];
+            const maxY = zoneBound.points[2][1];
+
+            for (let i = 1; i <= 10; i++) {
+                const camNum = (z - 1) * 10 + i;
+                
+                // Distribute layout inside target polygon boundary safely
+                const mapX = minX + 20 + ((maxX - minX - 40) / 9) * (i - 1);
+                const mapY = minY + 25 + ((maxY - minY - 40) / 9) * ((i * 3) % 8);
+
+                camerasDb[z].push({
+                    id: `NDA_C${z}_${camNum < 10 ? '0' + camNum : camNum}`,
+                    title: `ZONE ${z} CCTV SEC-FEED ${i}`,
+                    lat: `10.${600 + z * 3 + i} N`,
+                    lng: `7.${420 + z * 2 + i} E`,
+                    status: (camNum === 35 || camNum === 77) ? "OFFLINE" : "LIVE",
+                    angle: Math.random() * 360,
+                    sweepSpeed: 0.008 + Math.random() * 0.012,
+                    maxSweep: 30 + Math.random() * 30,
+                    mapPos: [mapX, mapY]
+                });
+            }
+        }
+
+        // Incident Log Data Array (Starting with standard realistic alarms)
+        let incidentLogs = [
+            { id: 101, zone: 4, cam: "NDA_C4_34", type: "critical", text: "[ZONE 4 - ARMORY]: Intrusion Detected (Moving thermal target) near Perimeter Fence Zone 4 Alpha", timestamp: "04:52:15", acknowledged: false },
+            { id: 102, zone: 1, cam: "NDA_C1_01", type: "warning", text: "[ZONE 1 - GATE A]: Vehicle ID mismatch registered on automated RFID check", timestamp: "04:50:10", acknowledged: false },
+            { id: 103, zone: 5, cam: "NDA_C5_45", type: "warning", text: "[ZONE 5 - QUARTERS]: Unauthorized patrol path vehicle detected during scheduled lockdown", timestamp: "04:38:00", acknowledged: true },
+            { id: 104, zone: 9, cam: "NDA_C9_88", type: "info", text: "[ZONE 9 - GYM]: Routine camera parameter sweep completed (PTZ lock calibrated)", timestamp: "04:35:12", acknowledged: true },
+        ];
+
+        // 2. Initialize App Lifecycle
+        window.onload = function() {
+            // Setup Live Clock Timer
+            setInterval(updateClock, 1000);
+            updateClock();
+
+            // Populate Left Control Zone Grid
+            buildZoneSelector();
+
+            // Initialize Security Alerts log UI
+            renderAlertLogs();
+
+            // Populate Lower Tape Carousel
+            renderTapeCarousel();
+
+            // Setup Event Handlers for UI Canvas drawing
+            startCameraStreams();
+
+            // Custom Welcome speech
+            setTimeout(() => {
+                synthesizeAnnunciation("Intelligence center operating lines configured. NDA Kaduna surveillance lines are secure.");
+            }, 1500);
+        };
+
+        // 3. Audio & Voice Alerts Sound System (Synthetic Sound Generation via Web Audio API)
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playFeedbackBeep(type) {
+            initAudio();
+            if (!audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'click') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(900, audioCtx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === 'alarm') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(880, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            }
+        }
+
+        function triggerSirenSynth() {
+            initAudio();
+            if (!audioCtx) return;
+
+            // Synthesis of a high-tech radar alert sweep (combining multi oscillators)
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            const lfo = audioCtx.createOscillator();
+            const lfoGain = audioCtx.createGain();
+            const masterGain = audioCtx.createGain();
+
+            osc1.type = 'sawtooth';
+            osc2.type = 'sine';
+            lfo.type = 'sine';
+
+            osc1.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc2.frequency.setValueAtTime(444, audioCtx.currentTime);
+            lfo.frequency.setValueAtTime(6, audioCtx.currentTime); // 6 Hz modulation speed
+
+            lfoGain.gain.setValueAtTime(100, audioCtx.currentTime);
+            masterGain.gain.setValueAtTime(0.07, audioCtx.currentTime);
+            masterGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+
+            lfo.connect(lfoGain);
+            lfoGain.connect(osc1.frequency);
+            lfoGain.connect(osc2.frequency);
+
+            osc1.connect(masterGain);
+            osc2.connect(masterGain);
+            masterGain.connect(audioCtx.destination);
+
+            lfo.start();
+            osc1.start();
+            osc2.start();
+
+            lfo.stop(audioCtx.currentTime + 1.2);
+            osc1.stop(audioCtx.currentTime + 1.2);
+            osc2.stop(audioCtx.currentTime + 1.2);
+        }
+
+        // Web Speech synthesis for tactile announcements
+        function synthesizeAnnunciation(text) {
+            const toggle = document.getElementById('voiceAnnounceToggle');
+            if (toggle && !toggle.checked) return;
+
+            if ('speechSynthesis' in window) {
+                // Cancel current speech to prevent queue build-up
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.volume = 1.0;
+                utterance.rate = 1.0;
+                utterance.pitch = 0.95; // Slightly deeper military intelligence voice
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Live Clock Updates
+        function updateClock() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            const clockEl = document.getElementById('liveClock');
+            if (clockEl) {
+                clockEl.textContent = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            }
+        }
+
+        // 4. GUI Layout Controllers
+        function buildZoneSelector() {
+            const grid = document.getElementById('zoneGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const btn = document.createElement('button');
+                btn.id = `btnZone-${i}`;
+                btn.className = `py-2 font-bold rounded text-xs transition duration-150 border uppercase tracking-wider ${
+                    i === currentZone 
+                        ? 'bg-nda-green border-nda-gold text-white shadow font-black glow-gold' 
+                        : 'bg-nda-panelBg border-nda-green/40 text-slate-400 hover:text-white hover:border-nda-gold'
+                }`;
+                btn.innerHTML = `Z${i}`;
+                btn.onclick = () => selectZone(i);
+                grid.appendChild(btn);
+            }
+        }
+
+        function selectZone(zoneNum) {
+            playFeedbackBeep('click');
+            currentZone = zoneNum;
+            
+            // Rebuild selection style
+            for (let i = 1; i <= 10; i++) {
+                const btn = document.getElementById(`btnZone-${i}`);
+                if (btn) {
+                    if (i === zoneNum) {
+                        btn.className = "py-2 font-bold rounded text-xs transition duration-150 border uppercase tracking-wider bg-nda-green border-nda-gold text-white shadow font-black glow-gold";
+                    } else {
+                        btn.className = "py-2 font-bold rounded text-xs transition duration-150 border uppercase tracking-wider bg-nda-panelBg border-nda-green/40 text-slate-400 hover:text-white hover:border-nda-gold";
+                    }
+                }
+            }
+
+            // Update title label
+            const titleEl = document.getElementById('currentZoneTitle');
+            if (titleEl) {
+                titleEl.innerHTML = `<i class="fa-solid fa-tower-observation text-nda-gold mr-1"></i>ACTIVE GRID CONSOLE: ${zoneLabels[zoneNum]}`;
+            }
+
+            // Sync focused camera to first camera in this zone
+            selectedCameraIndex = 0;
+            updateFocusLabels();
+
+            // Re-render lower scrollable tape carousel for next zone
+            renderTapeCarousel();
+
+            // Trigger custom speech for operational authenticity
+            synthesizeAnnunciation(`Displaying Zone ${zoneNum}: ${zoneLabels[zoneNum].split('(')[0]}`);
+        }
+
+        function changeLayout(layoutType) {
+            playFeedbackBeep('click');
+            selectedLayout = layoutType;
+
+            // Reset CSS layout buttons classes
+            const btnGrid = document.getElementById('btnLayoutGrid');
+            const btnFocus = document.getElementById('btnLayoutFocus');
+            const btnMap = document.getElementById('btnLayoutMap');
+
+            [btnGrid, btnFocus, btnMap].forEach(b => {
+                if (b) {
+                    b.className = "py-1.5 px-1 rounded text-center text-xs font-bold border flex flex-col items-center justify-center gap-1 transition-all duration-200 bg-nda-panelBg border-nda-green/50 text-slate-400 hover:text-white";
+                }
+            });
+
+            // Target Active displays
+            const viewGrid = document.getElementById('layoutGrid');
+            const viewFocus = document.getElementById('layoutFocus');
+            const viewMap = document.getElementById('layoutMap');
+
+            viewGrid.classList.add('hidden');
+            viewFocus.classList.add('hidden');
+            viewMap.classList.add('hidden');
+
+            if (layoutType === 'grid') {
+                if (btnGrid) btnGrid.className = "py-1.5 px-1 rounded text-center text-xs font-bold border flex flex-col items-center justify-center gap-1 transition-all duration-200 bg-nda-green border-nda-gold text-white shadow";
+                viewGrid.classList.remove('hidden');
+            } else if (layoutType === 'focus') {
+                if (btnFocus) btnFocus.className = "py-1.5 px-1 rounded text-center text-xs font-bold border flex flex-col items-center justify-center gap-1 transition-all duration-200 bg-nda-green border-nda-gold text-white shadow";
+                viewFocus.classList.remove('hidden');
+                updateFocusLabels();
+            } else if (layoutType === 'map') {
+                if (btnMap) btnMap.className = "py-1.5 px-1 rounded text-center text-xs font-bold border flex flex-col items-center justify-center gap-1 transition-all duration-200 bg-nda-green border-nda-gold text-white shadow";
+                viewMap.classList.remove('hidden');
+                drawCampusMap();
+            }
+        }
+
+        function focusOnCamera(index) {
+            selectedCameraIndex = index;
+            changeLayout('focus');
+        }
+
+        function updateFocusLabels() {
+            const cam = camerasDb[currentZone][selectedCameraIndex];
+            const badge = document.getElementById('focusLabelBadge');
+            const title = document.getElementById('focusCamTitle');
+            const coords = document.getElementById('focusCamCoords');
+
+            if (badge) badge.textContent = cam.id;
+            if (title) title.textContent = `CAMERA PTZ DETAIL: ${cam.title}`;
+            if (coords) coords.textContent = `COORDS: LAT ${cam.lat}, LNG ${cam.lng} // NDA TACTICAL ZONE GRID`;
+        }
+
+        function setSystemMode(mode) {
+            playFeedbackBeep('success');
+            systemMode = mode;
+
+            const btnNormal = document.getElementById('modeNormal');
+            const btnAi = document.getElementById('modeAi');
+            const configPanel = document.getElementById('aiConfigPanel');
+
+            if (mode === 'normal') {
+                btnNormal.className = "w-1/2 py-2 text-xs font-bold rounded transition-all duration-200 bg-nda-green border border-nda-gold text-white glow-gold";
+                btnAi.className = "w-1/2 py-2 text-xs font-bold rounded transition-all duration-200 bg-slate-800 text-slate-300";
+                configPanel.classList.add('opacity-40', 'pointer-events-none');
+                synthesizeAnnunciation("System mode switched to Normal video bypass.");
+            } else {
+                btnNormal.className = "w-1/2 py-2 text-xs font-bold rounded transition-all duration-200 bg-slate-800 text-slate-300";
+                btnAi.className = "w-1/2 py-2 text-xs font-bold rounded transition-all duration-200 bg-nda-green border border-nda-gold text-white glow-green";
+                configPanel.classList.remove('opacity-40', 'pointer-events-none');
+                synthesizeAnnunciation("Artificial Intelligence tactical overlays activated.");
+            }
+        }
+
+        function toggleAiOption(option) {
+            playFeedbackBeep('click');
+            aiConfig[option] = document.getElementById(`ai${option.charAt(0).toUpperCase() + option.slice(1)}`).checked;
+        }
+
+        function triggerPtzAction(action) {
+            playFeedbackBeep('click');
+            const cam = camerasDb[currentZone][selectedCameraIndex];
+            
+            // Add custom short visual status logging at incident stream
+            const ptzTime = new Date().toTimeString().split(' ')[0];
+            const logs = document.getElementById('logsContainer');
+            if (logs) {
+                const infoDiv = document.createElement('div');
+                infoDiv.className = "bg-nda-panelBg p-2 rounded border border-nda-gold/30 text-[10px] text-slate-200";
+                infoDiv.innerHTML = `
+                    <div class="flex justify-between items-center text-[9px] text-nda-gold font-bold">
+                        <span>PTZ COMMAND ACCEPTED</span>
+                        <span>${ptzTime}</span>
+                    </div>
+                    <p class="text-[10px] text-slate-300">Sent code [PTZ_${action.replace(' ', '_')}] to unit ${cam.id}. Adjusted servo motors.</p>
+                `;
+                logs.insertBefore(infoDiv, logs.firstChild);
+            }
+        }
+
+        // 5. Smart Alerts Feed Logic
+        function renderAlertLogs() {
+            const container = document.getElementById('logsContainer');
+            const countEl = document.getElementById('incidentCount');
+            if (!container) return;
+
+            // Filter logic
+            const filtered = incidentLogs.filter(log => {
+                if (filterActive === 'all') return true;
+                return log.type === filterActive;
+            });
+
+            if (countEl) countEl.textContent = `${filtered.length} Alerts`;
+
+            container.innerHTML = '';
+            filtered.forEach(log => {
+                let badgeColor = '';
+                let borderClass = '';
+                let textClass = '';
+                let iconClass = '';
+
+                if (log.type === 'critical') {
+                    badgeColor = 'bg-nda-red text-white animate-alarm';
+                    borderClass = 'border-nda-red glow-red';
+                    textClass = 'text-white';
+                    iconClass = 'fa-solid fa-triangle-exclamation';
+                } else if (log.type === 'warning') {
+                    badgeColor = 'bg-amber-600 text-white';
+                    borderClass = 'border-amber-600';
+                    textClass = 'text-amber-100';
+                    iconClass = 'fa-solid fa-clock-rotate-left';
+                } else {
+                    badgeColor = 'bg-nda-green border border-nda-gold text-white';
+                    borderClass = 'border-nda-green';
+                    textClass = 'text-slate-300';
+                    iconClass = 'fa-solid fa-circle-info';
+                }
+
+                const card = document.createElement('div');
+                card.className = `p-2.5 rounded border ${borderClass} bg-nda-panelBg flex flex-col space-y-2 transition-all duration-300 hover:border-nda-gold relative`;
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-center text-[10px]">
+                        <span class="px-1.5 py-0.5 rounded font-black uppercase text-[8px] flex items-center gap-1 ${badgeColor}">
+                            <i class="${iconClass}"></i> ${log.type.toUpperCase()}
+                        </span>
+                        <span class="text-slate-400 font-mono text-[9px]">${log.timestamp}</span>
+                    </div>
+                    
+                    <p class="text-[11px] font-semibold leading-tight ${textClass}">${log.text}</p>
+                    
+                    <div class="flex justify-between items-center pt-1 border-t border-nda-green/30 text-[9px]">
+                        <span class="text-nda-gold font-bold">CAM: ${log.cam}</span>
+                        <div class="flex space-x-1">
+                            <button onclick="zoomToAlertZone(${log.zone}, '${log.cam}')" class="bg-nda-green hover:bg-nda-greenLight border border-nda-gold text-white px-1.5 py-0.5 rounded transition">
+                                <i class="fa-solid fa-magnifying-glass"></i> View
+                            </button>
+                            ${!log.acknowledged ? `
+                                <button onclick="acknowledgeAlert(${log.id})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded transition">
+                                    Acknowledge
+                                </button>
+                            ` : `
+                                <span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Resolved</span>
+                            `}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function zoomToAlertZone(zoneId, camId) {
+            selectZone(zoneId);
+            // Search camera index
+            const idx = camerasDb[zoneId].findIndex(c => c.id === camId);
+            if (idx !== -1) {
+                focusOnCamera(idx);
+            }
+        }
+
+        function acknowledgeAlert(alertId) {
+            playFeedbackBeep('success');
+            const log = incidentLogs.find(l => l.id === alertId);
+            if (log) {
+                log.acknowledged = true;
+                renderAlertLogs();
+            }
+        }
+
+        function filterLogs(prio) {
+            playFeedbackBeep('click');
+            filterActive = prio;
+
+            // Style tabs
+            ['filterCritical', 'filterWarning', 'filterAll'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('ring-1', 'ring-nda-gold');
+            });
+
+            if (prio === 'critical') {
+                document.getElementById('filterCritical').classList.add('ring-1', 'ring-nda-gold');
+            } else if (prio === 'warning') {
+                document.getElementById('filterWarning').classList.add('ring-1', 'ring-nda-gold');
+            } else {
+                document.getElementById('filterAll').classList.add('ring-1', 'ring-nda-gold');
+            }
+
+            renderAlertLogs();
+        }
+
+        // Action panel triggered by manual Operator simulator
+        function injectSimulatedIncident(type) {
+            triggerSirenSynth();
+
+            const simTime = new Date().toTimeString().split(' ')[0];
+            const randCamId = camerasDb[currentZone][Math.floor(Math.random() * 10)].id;
+            
+            let threatText = '';
+            if (type === 'critical') {
+                threatText = `[${zoneLabels[currentZone].split(' ')[1]} - ${randCamId}]: Security alarm triggered inside custom ROI boundary polygon. Thermal scanner tracks rapid target movement.`;
+                synthesizeAnnunciation(`Warning: Perimeter intrusion detected at ${zoneLabels[currentZone].split(' ')[1]}`);
+            } else {
+                threatText = `[${zoneLabels[currentZone].split(' ')[1]} - ${randCamId}]: Night curfew warning. Personnel motion tracked near main cadet avenue during secure hours.`;
+                synthesizeAnnunciation(`Warning: Motion tracks during active curfew hours.`);
+            }
+
+            const newLog = {
+                id: Date.now(),
+                zone: currentZone,
+                cam: randCamId,
+                type: type,
+                text: threatText,
+                timestamp: simTime,
+                acknowledged: false
+            };
+
+            // Insert to index 0 of logs
+            incidentLogs.unshift(newLog);
+            renderAlertLogs();
+        }
+
+        // Periodic simulated threat alarms to trigger every 45s for authenticity
+        setInterval(() => {
+            const automaticZones = [3, 4, 6, 7];
+            const randZone = automaticZones[Math.floor(Math.random() * automaticZones.length)];
+            const simTime = new Date().toTimeString().split(' ')[0];
+            const targetCam = camerasDb[randZone][Math.floor(Math.random() * 10)];
+
+            const autoLog = {
+                id: Date.now(),
+                zone: randZone,
+                cam: targetCam.id,
+                type: Math.random() > 0.4 ? 'warning' : 'critical',
+                text: `[ZONE ${randZone} - AUTOMATED SWEEP]: AI analysis detects perimeter anomaly on frame check matching vehicle profile: [NGA-MIL-932]`,
+                timestamp: simTime,
+                acknowledged: false
+            };
+
+            incidentLogs.unshift(autoLog);
+            renderAlertLogs();
+            triggerSirenSynth();
+            synthesizeAnnunciation(`Attention Command Office. Security update in Sector Zone ${randZone}.`);
+        }, 45000);
+
+        // 6. Carousel Stream Strip (Footer quick view)
+        function renderTapeCarousel() {
+            const carousel = document.getElementById('tapeCarousel');
+            if (!carousel) return;
+
+            carousel.innerHTML = '';
+            // Display Zone 2 cameras for tape glance as mentioned in visual spec
+            const glanceZone = currentZone === 2 ? 1 : 2; 
+            const sourceCams = camerasDb[glanceZone];
+
+            sourceCams.forEach((cam, i) => {
+                const card = document.createElement('div');
+                card.className = "w-28 bg-black rounded border border-nda-green/60 p-1 shrink-0 text-[9px] relative cursor-pointer hover:border-nda-gold transition flex flex-col space-y-1 scanlines";
+                card.onclick = () => {
+                    selectZone(glanceZone);
+                    focusOnCamera(i);
+                };
+
+                card.innerHTML = `
+                    <div class="flex justify-between text-[7px] font-bold">
+                        <span class="text-nda-gold">${cam.id}</span>
+                        <span class="text-emerald-400">● LIVE</span>
+                    </div>
+                    <div class="h-11 bg-slate-900 overflow-hidden relative">
+                        <canvas id="miniCamCanvas-${cam.id}" class="w-full h-full object-cover"></canvas>
+                        <!-- Stylized scope inside mini preview -->
+                        <div class="absolute inset-0 border border-emerald-500/20 flex items-center justify-center">
+                            <span class="text-[5px] text-emerald-500 font-mono tracking-tighter scale-75">T-98%</span>
+                        </div>
+                    </div>
+                    <div class="truncate font-semibold text-slate-300 text-[8px]">${cam.title}</div>
+                `;
+                carousel.appendChild(card);
+
+                // Run mini simulated canvas loop inside tape
+                setTimeout(() => {
+                    const canvas = document.getElementById(`miniCamCanvas-${cam.id}`);
+                    if (canvas) {
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = 112;
+                        canvas.height = 44;
+                        
+                        let offset = Math.random() * 100;
+                        function drawMiniFeed() {
+                            if (!document.getElementById(`miniCamCanvas-${cam.id}`)) return; // protect memory leaks
+                            
+                            ctx.fillStyle = "#0c1210";
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                            // Draw a moving tactical vector scene
+                            ctx.strokeStyle = "rgba(16, 185, 129, 0.2)";
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(0, Math.sin(offset / 10) * 10 + 22);
+                            ctx.lineTo(canvas.width, Math.sin((offset + 50) / 10) * 10 + 22);
+                            ctx.stroke();
+
+                            // Draw small camera lens/box elements
+                            ctx.fillStyle = "rgba(212, 175, 55, 0.4)";
+                            ctx.fillRect(Math.sin(offset / 30) * 40 + 50, 15, 6, 6);
+
+                            offset += 0.5;
+                            requestAnimationFrame(drawMiniFeed);
+                        }
+                        drawMiniFeed();
+                    }
+                }, 100);
+            });
+        }
+
+
+        // 7. Highly Upgraded Tactical Campus Vector Map with Real Coverage Areas Cone Sweep Loop
+        let mapScale = 1.0;
+        let mapOffsetX = 0;
+        let mapOffsetY = 0;
+        let isDraggingMap = false;
+        let dragStartX, dragStartY;
+
+        function drawCampusMap() {
+            const canvas = document.getElementById('campusMapCanvas');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            
+            // Auto resize canvas to fill containers bounding box
+            function resizeMapCanvas() {
+                const box = canvas.parentNode.getBoundingClientRect();
+                canvas.width = box.width;
+                canvas.height = box.height;
+            }
+            resizeMapCanvas();
+
+            // Setup map dragging events
+            canvas.onmousedown = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+
+                // Click-to-Interact check on camera nodes or zones
+                // Convert screen mouse click coordinates to Map World Coordinates
+                const worldX = (clickX - canvas.width / 2 - mapOffsetX) / mapScale;
+                const worldY = (clickY - canvas.height / 2 - mapOffsetY) / mapScale;
+
+                // 1. Check if clicked a camera node
+                let clickedCam = false;
+                camerasDb[currentZone].forEach((cam, idx) => {
+                    const cx = cam.mapPos[0];
+                    const cy = cam.mapPos[1];
+                    const dist = Math.sqrt((worldX - cx) ** 2 + (worldY - cy) ** 2);
+                    if (dist < 15) { // clickable tolerance radius
+                        clickedCam = true;
+                        focusOnCamera(idx);
+                    }
+                });
+
+                // 2. Check if clicked a different Zone polygon area to jump active zone
+                if (!clickedCam) {
+                    campusZonesMap.forEach((zone) => {
+                        // Simple bounding box checks inside the NDA coordinates mapping
+                        const xs = zone.points.map(p => p[0]);
+                        const ys = zone.points.map(p => p[1]);
+                        const minX = Math.min(...xs);
+                        const maxX = Math.max(...xs);
+                        const minY = Math.min(...ys);
+                        const maxY = Math.max(...ys);
+
+                        if (worldX >= minX && worldX <= maxX && worldY >= minY && worldY <= maxY) {
+                            if (zone.id !== currentZone) {
+                                selectZone(zone.id);
+                            }
+                        }
+                    });
+                }
+
+                isDraggingMap = true;
+                dragStartX = e.clientX - mapOffsetX;
+                dragStartY = e.clientY - mapOffsetY;
+            };
+
+            window.onmouseup = () => { isDraggingMap = false; };
+            canvas.onmousemove = (e) => {
+                if (isDraggingMap) {
+                    mapOffsetX = e.clientX - dragStartX;
+                    mapOffsetY = e.clientY - dragStartY;
+                }
+            };
+            
+            // Map zoom wheel listener
+            canvas.onwheel = (e) => {
+                e.preventDefault();
+                const zoomFactor = 1.1;
+                if (e.deltaY < 0) {
+                    mapScale *= zoomFactor;
+                } else {
+                    mapScale /= zoomFactor;
+                }
+                mapScale = Math.max(0.6, Math.min(mapScale, 3.5)); // boundary clamping
+            };
+
+            let frameCount = 0;
+            function renderMapLoop() {
+                if (selectedLayout !== 'map') return; // break render loop if tab switches
+
+                // DOM layer visibility flags
+                const showCones = document.getElementById('toggleMapCones')?.checked ?? true;
+                const showZones = document.getElementById('toggleMapZones')?.checked ?? true;
+                const showTracks = document.getElementById('toggleMapTracks')?.checked ?? true;
+
+                ctx.fillStyle = "#050808";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.save();
+                // Apply drag & zoom matrix operations
+                ctx.translate(canvas.width / 2 + mapOffsetX, canvas.height / 2 + mapOffsetY);
+                ctx.scale(mapScale, mapScale);
+
+                // Draw Radar sweeping background concentric rings
+                ctx.strokeStyle = "rgba(15, 76, 42, 0.15)";
+                ctx.lineWidth = 1;
+                for (let r = 100; r <= 800; r += 150) {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, r, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // Radar Sweeper lines (Tactical C2 Command aesthetics)
+                const sweepAngle = (frameCount % 360) * (Math.PI / 180);
+                ctx.strokeStyle = "rgba(214, 175, 55, 0.08)";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(Math.cos(sweepAngle) * 600, Math.sin(sweepAngle) * 600);
+                ctx.stroke();
+
+                // Draw Campus layout polygons (Gate, Barracks, Perimeter)
+                if (showZones) {
+                    campusZonesMap.forEach(zone => {
+                        const isCurrent = zone.id === currentZone;
+                        
+                        ctx.strokeStyle = isCurrent ? "rgba(214, 175, 55, 0.7)" : zone.stroke;
+                        ctx.lineWidth = isCurrent ? 2 : 1.2;
+                        ctx.fillStyle = isCurrent ? "rgba(214, 175, 55, 0.05)" : zone.color;
+
+                        ctx.beginPath();
+                        ctx.moveTo(zone.points[0][0], zone.points[0][1]);
+                        for (let p = 1; p < zone.points.length; p++) {
+                            ctx.lineTo(zone.points[p][0], zone.points[p][1]);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+
+                        // Label Zone Title on Polygon
+                        ctx.fillStyle = isCurrent ? "#D4AF37" : "rgba(255, 255, 255, 0.45)";
+                        ctx.font = isCurrent ? "bold 9px monospace" : "8px monospace";
+                        ctx.textAlign = "center";
+                        ctx.fillText(`${zone.name.toUpperCase()} (Z${zone.id})`, 
+                            (zone.points[0][0] + zone.points[2][0]) / 2, 
+                            zone.points[0][1] + 15
+                        );
+                    });
+                }
+
+                // Render dynamic coverage areas (cones of sight) for active cameras in selected zone
+                camerasDb[currentZone].forEach((cam, i) => {
+                    const cx = cam.mapPos[0];
+                    const cy = cam.mapPos[1];
+                    const isOffline = cam.status === "OFFLINE";
+                    const isFocus = (i === selectedCameraIndex);
+
+                    // Skip cone rendering if camera is offline
+                    if (isOffline) return;
+
+                    // Calculate pan offset to simulate security sweeps
+                    const sweepAmplitude = cam.maxSweep * (Math.PI / 180);
+                    const sweepAngleOffset = Math.sin(frameCount * cam.sweepSpeed) * sweepAmplitude;
+                    const baseAngleRad = cam.angle * (Math.PI / 180);
+                    const currentAngleRad = baseAngleRad + sweepAngleOffset;
+
+                    const coneRange = 75; // dynamic coverage range length
+                    const fovAngleRad = 40 * (Math.PI / 180); // 40 degree lens view cone
+
+                    // Check active alerts triggered in this specific zone
+                    const alertInZone = incidentLogs.some(log => log.zone === currentZone && log.cam === cam.id && !log.acknowledged);
+
+                    // Dynamic Color definition based on alarm state
+                    let coneColor = "rgba(16, 185, 129, 0.09)"; // Safe Green
+                    let coneStroke = "rgba(16, 185, 129, 0.35)";
+
+                    if (alertInZone) {
+                        // Danger Red warning cone pulse
+                        const pulse = Math.abs(Math.sin(frameCount / 4));
+                        coneColor = `rgba(155, 17, 30, ${0.15 + pulse * 0.25})`;
+                        coneStroke = `rgba(210, 20, 58, ${0.6 + pulse * 0.4})`;
+                    } else if (isFocus) {
+                        coneColor = "rgba(214, 175, 55, 0.16)"; // Selected Gold focus cone
+                        coneStroke = "rgba(214, 175, 55, 0.7)";
+                    }
+
+                    if (showCones) {
+                        ctx.save();
+                        ctx.fillStyle = coneColor;
+                        ctx.strokeStyle = coneStroke;
+                        ctx.lineWidth = isFocus ? 1.5 : 1.0;
+
+                        // Draw visual optical sweep pie wedge
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy);
+                        ctx.arc(
+                            cx, cy, 
+                            coneRange, 
+                            currentAngleRad - fovAngleRad/2, 
+                            currentAngleRad + fovAngleRad/2
+                        );
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+
+                        // Visual scanning radius marker sweep arcs
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, coneRange - 20, currentAngleRad - fovAngleRad/2, currentAngleRad + fovAngleRad/2);
+                        ctx.stroke();
+
+                        ctx.restore();
+                    }
+
+                    // Draw Camera placement Node Beacon Circle
+                    const pulseRadius = 4 + Math.abs(Math.sin(frameCount / 10) * 4);
+                    
+                    if (isOffline) {
+                        ctx.fillStyle = "#9B111E";
+                        ctx.strokeStyle = "#D2143A";
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else {
+                        // Pulse beacon signal
+                        ctx.strokeStyle = alertInZone ? "#D2143A" : (isFocus ? "#FFFFFF" : "#10B981");
+                        ctx.fillStyle = alertInZone ? "#9B111E" : (isFocus ? "#D4AF37" : "#1B6A3D");
+
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, pulseRadius, 0, Math.PI * 2);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    // Node Code Metadata Tag
+                    if (isFocus) {
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.font = "bold 8px monospace";
+                        ctx.textAlign = "left";
+                        ctx.fillText(`▶ LOCKED: ${cam.id}`, cx + 8, cy - 6);
+                    } else {
+                        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+                        ctx.font = "6px monospace";
+                        ctx.textAlign = "left";
+                        ctx.fillText(cam.id, cx + 6, cy + 2);
+                    }
+                });
+
+                // Render Simulated Live Motion Target Tracks
+                if (showTracks) {
+                    incidentLogs.forEach(log => {
+                        const targetCam = camerasDb[log.zone]?.find(c => c.id === log.cam);
+                        if (targetCam && !log.acknowledged) {
+                            const tx = targetCam.mapPos[0] + Math.sin(frameCount / 20) * 20;
+                            const ty = targetCam.mapPos[1] + Math.cos(frameCount / 20) * 20;
+
+                            // Draw red ping tracker beacon
+                            ctx.strokeStyle = "#D2143A";
+                            ctx.fillStyle = "rgba(155, 17, 30, 0.2)";
+                            ctx.lineWidth = 1;
+
+                            ctx.beginPath();
+                            ctx.arc(tx, ty, 15 + Math.sin(frameCount / 5) * 8, 0, Math.PI * 2);
+                            ctx.stroke();
+                            ctx.fill();
+
+                            ctx.beginPath();
+                            ctx.arc(tx, ty, 3, 0, Math.PI * 2);
+                            ctx.fillStyle = "#D2143A";
+                            ctx.fill();
+
+                            ctx.fillStyle = "#FFFFFF";
+                            ctx.font = "bold 8px monospace";
+                            ctx.fillText("⚠️ BREACH TARGET", tx + 8, ty - 4);
+                        }
+                    });
+                }
+
+                ctx.restore();
+
+                frameCount++;
+                requestAnimationFrame(renderMapLoop);
+            }
+
+            renderMapLoop();
+        }
+
+
+        // 8. Dynamic Simulated CCTV Live Camera Feeds Drawing (Beautiful Canvas loops)
+        function startCameraStreams() {
+            // Initiate loops for each grid canvas (0 to 9)
+            for (let i = 0; i < 10; i++) {
+                initGridFeedCanvas(i);
+            }
+
+            // Initiate loop for Focused camera
+            initFocusFeedCanvas();
+        }
+
+        // Simulates dynamic live camera captures, scanning sweeps, object trackers, HUD
+        function initGridFeedCanvas(index) {
+            const canvas = document.getElementById(`camCanvas-${index}`);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            
+            // Set scale height
+            canvas.width = 320;
+            canvas.height = 180;
+
+            let frame = 0;
+            let noiseSeeds = Array.from({length: 10}, () => Math.random() * 200);
+            
+            // Random parameters for motion simulation inside this camera grid cell
+            let particles = Array.from({length: 3}, () => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 1.5,
+                vy: (Math.random() - 0.5) * 1.5,
+                type: Math.random() > 0.4 ? "PERSON" : "VEHICLE",
+                conf: (90 + Math.random() * 9).toFixed(1)
+            }));
+
+            function drawGridFrame() {
+                // Break drawing if current console is Map view to maintain performance
+                if (selectedLayout === 'map' || selectedLayout === 'focus') {
+                    // standby loop
+                    setTimeout(drawGridFrame, 100);
+                    return;
+                }
+
+                const camInfo = camerasDb[currentZone][index];
+                if (!camInfo) return;
+
+                if (camInfo.status === "OFFLINE") {
+                    // Draw military static / TV noise error
+                    ctx.fillStyle = "#111";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = "#9B111E";
+                    ctx.font = "bold 13px monospace";
+                    ctx.textAlign = "center";
+                    ctx.fillText("FEED OFFLINE // NO SIGNAL", canvas.width / 2, canvas.height / 2 - 5);
+                    ctx.font = "9px monospace";
+                    ctx.fillStyle = "#888";
+                    ctx.fillText("CHECK HARDWARE CONNEC v2", canvas.width / 2, canvas.height / 2 + 15);
+                    
+                    // Offline analog scan static noise
+                    ctx.strokeStyle = "rgba(255,255,255,0.06)";
+                    for (let n = 0; n < canvas.height; n += 4) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, n + Math.sin(frame + n)*2);
+                        ctx.lineTo(canvas.width, n);
+                        ctx.stroke();
+                    }
+                    frame++;
+                    requestAnimationFrame(drawGridFrame);
+                    return;
+                }
+
+                // Default Background color - Dark Green Army Surveillance theme
+                ctx.fillStyle = "#09120e";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw tactical grids / reticle lines
+                ctx.strokeStyle = "rgba(27, 106, 61, 0.15)";
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                // vertical grid lines
+                for (let x = 40; x < canvas.width; x += 40) {
+                    ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height);
+                }
+                // horizontal grid lines
+                for (let y = 30; y < canvas.height; y += 30) {
+                    ctx.moveTo(0, y); ctx.lineTo(canvas.width, y);
+                }
+                ctx.stroke();
+
+                // Dynamic simulation scenes depending on camera index
+                drawTacticalBackground(ctx, canvas, index, frame);
+
+                // Draw AI tracking parameters if mode is active
+                if (systemMode === 'ai') {
+                    
+                    // Region of Interest (ROI) boundaries polygon
+                    if (aiConfig.roi) {
+                        ctx.strokeStyle = "rgba(214, 175, 55, 0.6)";
+                        ctx.lineWidth = 1;
+                        ctx.fillStyle = "rgba(214, 175, 55, 0.04)";
+                        ctx.beginPath();
+                        ctx.moveTo(30, 40);
+                        ctx.lineTo(290, 40);
+                        ctx.lineTo(250, 150);
+                        ctx.lineTo(70, 150);
+                        ctx.closePath();
+                        ctx.stroke();
+                        ctx.fill();
+
+                        ctx.fillStyle = "#D4AF37";
+                        ctx.font = "8px monospace";
+                        ctx.textAlign = "left";
+                        ctx.fillText("RESTRICTED ROI: PERIM_ALPHA", 35, 52);
+                    }
+
+                    // Move particles (Intruder simulation targets)
+                    particles.forEach(p => {
+                        p.x += p.vx;
+                        p.y += p.vy;
+
+                        // Bounds check
+                        if (p.x < 10 || p.x > canvas.width - 10) p.vx *= -1;
+                        if (p.y < 10 || p.y > canvas.height - 10) p.vy *= -1;
+
+                        // Draw trackers
+                        if (aiConfig.object) {
+                            ctx.strokeStyle = "#9B111E";
+                            ctx.lineWidth = 1;
+                            
+                            // Tracker corner markers
+                            ctx.beginPath();
+                            ctx.rect(p.x - 14, p.y - 14, 28, 28);
+                            ctx.stroke();
+
+                            // Label
+                            ctx.fillStyle = "#9B111E";
+                            ctx.font = "7px monospace";
+                            ctx.fillText(`${p.type} [${p.conf}%]`, p.x - 12, p.y - 18);
+
+                            // Face recognition indicator matches
+                            if (aiConfig.face && p.type === "PERSON" && index % 3 === 0) {
+                                ctx.strokeStyle = "#D4AF37";
+                                ctx.beginPath();
+                                ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                                ctx.stroke();
+                                ctx.fillStyle = "#D4AF37";
+                                ctx.fillText("CADET_MATCH_OK", p.x - 12, p.y + 24);
+                            }
+                        }
+                    });
+
+                    // Curfew warning alerts bounds trigger simulation (e.g., flashes)
+                    if (aiConfig.curfew && index === 3 && frame % 60 < 20) {
+                        ctx.strokeStyle = "rgba(155, 17, 30, 0.4)";
+                        ctx.lineWidth = 4;
+                        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+                    }
+                }
+
+                // Camera sweeping reticle crosshair overlay
+                ctx.strokeStyle = "rgba(214, 175, 55, 0.25)";
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                // cross center lines
+                ctx.moveTo(canvas.width / 2 - 15, canvas.height / 2);
+                ctx.lineTo(canvas.width / 2 + 15, canvas.height / 2);
+                ctx.moveTo(canvas.width / 2, canvas.height / 2 - 15);
+                ctx.lineTo(canvas.width / 2, canvas.height / 2 + 15);
+                ctx.stroke();
+
+                // Corner bracket layouts
+                ctx.strokeStyle = "rgba(214, 175, 55, 0.5)";
+                ctx.lineWidth = 1;
+                // Top Left
+                ctx.beginPath(); ctx.moveTo(10, 20); ctx.lineTo(10, 10); ctx.lineTo(20, 10); ctx.stroke();
+                // Top Right
+                ctx.beginPath(); ctx.moveTo(canvas.width - 20, 10); ctx.lineTo(canvas.width - 10, 10); ctx.lineTo(canvas.width - 10, 20); ctx.stroke();
+                // Bottom Left
+                ctx.beginPath(); ctx.moveTo(10, canvas.height - 20); ctx.lineTo(10, canvas.height - 10); ctx.lineTo(20, canvas.height - 10); ctx.stroke();
+                // Bottom Right
+                ctx.beginPath(); ctx.moveTo(canvas.width - 20, canvas.height - 10); ctx.lineTo(canvas.width - 10, canvas.height - 10); ctx.lineTo(canvas.width - 10, canvas.height - 20); ctx.stroke();
+
+                // Draw live local scanning timestamp code bottom left inside feed
+                ctx.fillStyle = "rgba(255,255,255,0.4)";
+                ctx.font = "7px monospace";
+                ctx.textAlign = "left";
+                const dateStr = new Date().toISOString().split('T')[0];
+                const timeStr = new Date().toTimeString().split(' ')[0];
+                ctx.fillText(`C_INDEX:${index} // NDA SEC_NET // ${dateStr} ${timeStr}`, 15, canvas.height - 15);
+
+                frame++;
+                requestAnimationFrame(drawGridFrame);
+            }
+
+            drawGridFrame();
+        }
+
+        // Focused Larger Canvas View Draw loop
+        function initFocusFeedCanvas() {
+            const canvas = document.getElementById('focusMainCanvas');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            canvas.width = 800;
+            canvas.height = 450;
+
+            let frame = 0;
+            let particles = Array.from({length: 4}, () => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2,
+                type: Math.random() > 0.5 ? "PERSON" : "VEHICLE",
+                conf: (92 + Math.random() * 7).toFixed(1)
+            }));
+
+            function drawFocusFrame() {
+                if (selectedLayout !== 'focus') {
+                    setTimeout(drawFocusFrame, 100);
+                    return;
+                }
+
+                ctx.fillStyle = "#060a08";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // High fidelity radar sweeps grids
+                ctx.strokeStyle = "rgba(214, 175, 55, 0.08)";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for (let x = 50; x < canvas.width; x += 50) {
+                    ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height);
+                }
+                for (let y = 50; y < canvas.height; y += 50) {
+                    ctx.moveTo(0, y); ctx.lineTo(canvas.width, y);
+                }
+                ctx.stroke();
+
+                // Draw high res background objects
+                drawTacticalBackground(ctx, canvas, selectedCameraIndex, frame);
+
+                // Draw larger detailed AI overlay boxes
+                if (systemMode === 'ai') {
+                    // Region of Interest boundaries
+                    if (aiConfig.roi) {
+                        ctx.strokeStyle = "rgba(214, 175, 55, 0.75)";
+                        ctx.lineWidth = 1.5;
+                        ctx.fillStyle = "rgba(214, 175, 55, 0.05)";
+                        ctx.beginPath();
+                        ctx.moveTo(100, 80);
+                        ctx.lineTo(700, 80);
+                        ctx.lineTo(600, 380);
+                        ctx.lineTo(200, 380);
+                        ctx.closePath();
+                        ctx.stroke();
+                        ctx.fill();
+
+                        ctx.fillStyle = "#D4AF37";
+                        ctx.font = "bold 11px monospace";
+                        ctx.fillText("TACTICAL COMMAND ROI perimeter alpha check [ARMORY LINE]", 110, 105);
+                    }
+
+                    // Simulated thermal tracker entities
+                    particles.forEach(p => {
+                        p.x += p.vx;
+                        p.y += p.vy;
+
+                        if (p.x < 40 || p.x > canvas.width - 40) p.vx *= -1;
+                        if (p.y < 40 || p.y > canvas.height - 40) p.vy *= -1;
+
+                        if (aiConfig.object) {
+                            ctx.strokeStyle = "#9B111E";
+                            ctx.lineWidth = 2;
+                            ctx.strokeRect(p.x - 24, p.y - 24, 48, 48);
+
+                            // Object type overlay text
+                            ctx.fillStyle = "#FFFFFF";
+                            ctx.font = "bold 9px monospace";
+                            ctx.fillText(`TARGET LOCKED: ${p.type}`, p.x - 22, p.y - 32);
+                            ctx.fillStyle = "#D4AF37";
+                            ctx.fillText(`MATCH_CONF: ${p.conf}%`, p.x - 22, p.y - 42);
+
+                            // Tracking vector path lines
+                            ctx.strokeStyle = "rgba(155, 17, 30, 0.35)";
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p.x - p.vx * 20, p.y - p.vy * 20);
+                            ctx.stroke();
+                        }
+                    });
+                }
+
+                // Crosshairs
+                ctx.strokeStyle = "#D4AF37";
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2 - 30, canvas.height / 2);
+                ctx.lineTo(canvas.width / 2 + 30, canvas.height / 2);
+                ctx.moveTo(canvas.width / 2, canvas.height / 2 - 30);
+                ctx.lineTo(canvas.width / 2, canvas.height / 2 + 30);
+                ctx.stroke();
+
+                // Detailed overlay diagnostics status
+                ctx.fillStyle = "rgba(214, 175, 55, 0.95)";
+                ctx.font = "bold 11px monospace";
+                ctx.textAlign = "left";
+                ctx.fillText(`NDA PTZ FEED: ACTIVE // CONSOLE LEVEL SECURE // ID: ${camerasDb[currentZone][selectedCameraIndex].id}`, 30, 35);
+                
+                ctx.textAlign = "right";
+                ctx.fillText(`ZOOM_LEVEL: 1.0X STANDARD // LENS STABILIZED: ACTIVE`, canvas.width - 30, 35);
+
+                frame++;
+                requestAnimationFrame(drawFocusFrame);
+            }
+
+            drawFocusFrame();
+        }
+
+        // Draws beautiful military tactical silhouettes / layouts inside simulated camera canvas
+        function drawTacticalBackground(ctx, canvas, index, frame) {
+            ctx.save();
+            ctx.strokeStyle = "rgba(15, 76, 42, 0.25)";
+            ctx.fillStyle = "rgba(15, 76, 42, 0.15)";
+            ctx.lineWidth = 1;
+
+            if (index === 0) {
+                // Main gate layout (road with barrier gatehouse)
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2 - 40, canvas.height);
+                ctx.lineTo(canvas.width / 2 - 10, canvas.height / 2);
+                ctx.lineTo(canvas.width / 2 + 10, canvas.height / 2);
+                ctx.lineTo(canvas.width / 2 + 40, canvas.height);
+                ctx.stroke();
+
+                // Gatehouse silhouette
+                ctx.fillRect(canvas.width / 2 + 30, canvas.height / 2 - 10, 40, 30);
+                ctx.strokeRect(canvas.width / 2 + 30, canvas.height / 2 - 10, 40, 30);
+            } 
+            else if (index === 1) {
+                // Parade ground (large empty field with reviewing stand arches)
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2 + 20, 60, Math.PI, Math.PI * 2);
+                ctx.stroke();
+                
+                // Arches
+                ctx.strokeRect(canvas.width / 2 - 50, canvas.height / 2 - 30, 20, 30);
+                ctx.strokeRect(canvas.width / 2 - 10, canvas.height / 2 - 30, 20, 30);
+                ctx.strokeRect(canvas.width / 2 + 30, canvas.height / 2 - 30, 20, 30);
+            } 
+            else if (index === 3) {
+                // Armory (restricted bunker vault entry)
+                ctx.fillRect(canvas.width / 2 - 30, canvas.height / 2 - 20, 60, 40);
+                ctx.fillStyle = "#9B111E";
+                ctx.strokeStyle = "#9B111E";
+                ctx.strokeRect(canvas.width / 2 - 30, canvas.height / 2 - 20, 60, 40);
+
+                // Vault door wheel
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, 10, 0, Math.PI * 2);
+                ctx.stroke();
+            } 
+            else if (index === 8) {
+                // Swimming pool lanes lines
+                for (let l = 20; l < canvas.width; l += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(l, canvas.height);
+                    ctx.lineTo(canvas.width / 2 - 50 + l / 4, canvas.height / 2);
+                    ctx.stroke();
+                }
+            } 
+            else if (index === 9) {
+                // Command HQ Facade columns
+                ctx.fillRect(50, 50, canvas.width - 100, canvas.height - 100);
+                ctx.strokeStyle = "#D4AF37";
+                ctx.strokeRect(50, 50, canvas.width - 100, canvas.height - 100);
+                
+                // Columns lines
+                for (let c = 80; c < canvas.width - 80; c += 40) {
+                    ctx.strokeRect(c, 50, 10, canvas.height - 100);
+                }
+            }
+            else {
+                // Standard default surveillance path corridor lines
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height - 20);
+                ctx.lineTo(canvas.width, canvas.height / 2);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+    </script>
+</body>
+</html>
